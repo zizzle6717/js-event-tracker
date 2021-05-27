@@ -1,0 +1,5 @@
+const DEFAULT_MAX_BUCKET_SIZE = 1000;
+
+export {
+    DEFAULT_MAX_BUCKET_SIZE,
+};

@@ -11,23 +11,24 @@ const quickSearch = (arr: any[] | any[][], searchVal, arrSortIndex?: number) => 
     while (lx <= rx) {
         const mx = Math.floor((rx + lx) / 2);
         // This allows support for an array of arrays containing an accessor index with the value to search on
-        const arrSortVal = arrSortIndex != null ? arr[mx][arrSortIndex] : arr[mx];
+        const midIndexSortVal = arrSortIndex != null ? arr[mx][arrSortIndex] : arr[mx];
 
-        if (arrSortVal == null) {
+        if (midIndexSortVal == null) {
             throw new Error(`All elements of array must contain a value at arrSortIndex, ${arrSortIndex}`);
         }
 
-        if (typeof arrSortVal !== typeof searchVal) {
-            throw new Error(`typeof arrSortVal and searchVal are required to match (found ${typeof arrSortVal} and ${typeof searchVal})`);
+        if (typeof midIndexSortVal !== typeof searchVal) {
+            throw new Error(`typeof midIndexSortVal and searchVal are required to match (found ${typeof midIndexSortVal} and ${typeof searchVal})`);
         }
 
-        if (searchVal === arrSortVal) {
+        // Short-circuit
+        if (searchVal === midIndexSortVal) {
             return mx;
         }
 
-        if (searchVal > arrSortVal) {
+        if (searchVal > midIndexSortVal) {
             lx = mx + 1;
-        } else if (searchVal < arrSortVal) {
+        } else if (searchVal < midIndexSortVal) {
             rx = mx - 1;
         }
     }
