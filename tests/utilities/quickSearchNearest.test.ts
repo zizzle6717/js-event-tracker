@@ -59,26 +59,28 @@ describe('quickSearchNearest', () => {
         expect(actual).to.be.equal(expected);
     });
 
-    it('supports searching an array of arrays with an accessor index', () => {
-        const actual = quickSearchNearest([[0, 5], [3, 10], [20, 20], [30, 50], [53, 99]], 20, 'prev', 0);
-        const expected = 2;
+    it('supports normalizing search values on the fly', () => {
+        const actual = quickSearchNearest(
+            [[0, '5'], [3, '6'], [20, '7'], [30, '8'], [53, '11']],
+            10,
+            'prev',
+            {
+                arrValueIndex: 1,
+                normalizeValue: (val) => Number(val),
+            },
+        );
+        const expected = 3;
         expect(actual).to.be.equal(expected);
-        const actual2 = quickSearchNearest([[0, 5], [3, 10], [20, 20], [30, 50], [53, 99]], 99, 'prev', 1);
-        const expected2 = 4;
-        expect(actual2).to.be.equal(expected2);
-        const actua3 = quickSearchNearest([[0, 5], [3, 10], [20, 20], [30, 50], [53, 99]], 50, 'prev', 0);
-        const expected3 = 3;
-        expect(actua3).to.be.equal(expected3);
     });
 
-    it('throws if arrSortIndex is invalid', () => {
+    it('throws if arrValueIndex is invalid', () => {
         const actual = () => quickSearchNearest([[0, 5], [3, 10], [20, 20], [30, 50], [53, 99]], 20, 'prev');
         const expected = 'typeof sortVal(s) and searchVal are required to match (found object and number)';
         expect(actual).to.throw(expected);
-        const actual2 = () => quickSearchNearest([[0, 5], [3, 10], [20, 20], [30, 50], [53, 99]], 20, 'prev', 3);
-        const expected2 = 'All elements of array must contain a value at arrSortIndex, 3';
+        const actual2 = () => quickSearchNearest([[0, 5], [3, 10], [20, 20], [30, 50], [53, 99]], 20, 'prev', { arrValueIndex: 3 });
+        const expected2 = 'All elements of array must contain a value at arrValueIndex, 3';
         expect(actual2).to.throw(expected2);
-        const actual3 = () => quickSearchNearest([[0, 5], [3, 10], [20, '20'], [30, 50], [53, 99]], 20, 'prev', 1);
+        const actual3 = () => quickSearchNearest([[0, 5], [3, 10], [20, '20'], [30, 50], [53, 99]], 20, 'prev', { arrValueIndex: 1 });
         const expected3 = 'typeof sortVal(s) and searchVal are required to match (found string and number)';
         expect(actual3).to.throw(expected3);
     });

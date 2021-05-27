@@ -38,12 +38,12 @@ describe('quickSearch', () => {
         expect(actua3).to.be.equal(expected3);
     });
 
-    it('throws if arrSortIndex is invalid', () => {
+    it('throws if arrValueIndex is invalid', () => {
         const actual = () => quickSearch([[0, 5], [3, 10], [20, 20], [30, 50], [53, 99]], 20);
         const expected = 'typeof midIndexSortVal and searchVal are required to match (found object and number)';
         expect(actual).to.throw(expected);
         const actual2 = () => quickSearch([[0, 5], [3, 10], [20, 20], [30, 50], [53, 99]], 20, 3);
-        const expected2 = 'All elements of array must contain a value at arrSortIndex, 3';
+        const expected2 = 'All elements of array must contain a value at arrValueIndex, 3';
         expect(actual2).to.throw(expected2);
         const actual3 = () => quickSearch([[0, 5], [3, 10], [20, '20'], [30, 50], [53, 99]], 20, 1);
         const expected3 = 'typeof midIndexSortVal and searchVal are required to match (found string and number)';

@@ -2,7 +2,7 @@ module.exports = {
     all: true,
     'check-coverage': true,
     include: ['src/**/*.ts'],
-    exclude: ['**/coverage'],
+    exclude: ['**/coverage', '**/*.d.ts'],
     reporter: ['html', 'text'],
     'report-dir': './coverage',
     'temp-dir': './.nyc_output',

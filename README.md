@@ -1,6 +1,9 @@
 # js-event-tracker
 ## Summary
-This utility tracks helps track # of events in the past x seconds (up to 5 minutes in the past).
+This utility tracks helps track # of events in the past x seconds.
+
+defaults:
+* Up to 5 minutes in the past (configurable with `maxTimeSpan`)
 
 ## Build/Compile
 This command will output to the `./dist` directory
@@ -23,10 +26,26 @@ function myEvent() {
 
 myEvent();
 myEvent();
+myEvent();
 
 setTimeout(() => {
     myEvent();
 }, 1000);
+
+setTimeout(() => {
+    myEvent();
+}, 5000);
+
+setTimeout(() => {
+    myEventTracker.getEventCount(3); // 3 seconds in the past, returns a count of 4
+}, 2000);
+
+
+setTimeout(() => {
+    myEvent();
+    myEventTracker.getEventCount(10); // 10 seconds in the past, returns a count of 6
+    myEventTracker.getEventCount(2); // 1 seconds in the past, returns a count of 1
+}, 6000);
 
 ```
 
@@ -35,4 +54,8 @@ setTimeout(() => {
 Tests will compile any code changes in `./src` before running
 ```
 npm run test
+```
+Run unit tests with coverage:
+```
+npm run test:coverage
 ```

@@ -1,6 +1,6 @@
 // This is dependent on a pre-sorted array
-// If arrSortIndex is included, elements of array should be sorted by arrSortIndex
-const quickSearch = (arr: any[] | any[][], searchVal, arrSortIndex?: number) => {
+// If arrValueIndex is included, elements of array should be sorted by arrValueIndex
+const quickSearch = (arr: any[] | any[][], searchVal, arrValueIndex?: number) => {
     if (!arr.length) {
         return -1;
     }
@@ -11,10 +11,10 @@ const quickSearch = (arr: any[] | any[][], searchVal, arrSortIndex?: number) => 
     while (lx <= rx) {
         const mx = Math.floor((rx + lx) / 2);
         // This allows support for an array of arrays containing an accessor index with the value to search on
-        const midIndexSortVal = arrSortIndex != null ? arr[mx][arrSortIndex] : arr[mx];
+        const midIndexSortVal = arrValueIndex != null ? arr[mx][arrValueIndex] : arr[mx];
 
         if (midIndexSortVal == null) {
-            throw new Error(`All elements of array must contain a value at arrSortIndex, ${arrSortIndex}`);
+            throw new Error(`All elements of array must contain a value at arrValueIndex, ${arrValueIndex}`);
         }
 
         if (typeof midIndexSortVal !== typeof searchVal) {

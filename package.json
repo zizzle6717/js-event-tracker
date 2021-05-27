@@ -7,7 +7,8 @@
     "build": "rm -rf ./dist && tsc",
     "lint": "./node_modules/.bin/eslint --quiet --ext .js,.jsx,.ts,.tsx ./",
     "lint:fix": "./node_modules/.bin/eslint --quiet --ext .js,.jsx,.ts,.tsx --fix ./",
-    "test": "./node_modules/.bin/mocha -r ./node_modules/ts-node/register -r tsconfig-paths/register --config .mocharc.js './tests/**/*.test.ts' --exit"
+    "test": "./node_modules/.bin/mocha -r ./node_modules/ts-node/register -r tsconfig-paths/register --config .mocharc.js './tests/**/*.test.ts' --exit",
+    "test:coverage": "./node_modules/.bin/nyc --config ./nyc.config.js npm test"
   },
   "author": "Zack Anselm",
   "license": "ISC",
@@ -22,7 +23,7 @@
     "eslint": "^7.27.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.23.3",
-    "husky": "^4.3.7",
+    "husky": "^6.0.0",
     "mocha": "^8.4.0",
     "nyc": "^15.1.0",
     "ts-loader": "^6.2.1",
