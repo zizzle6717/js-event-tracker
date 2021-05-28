@@ -3,6 +3,7 @@ import EventTrackerBase, { IEventTrackerBaseOptions } from './EventTrackerBase';
 import quickSearchNearest from './utilities/quickSearchNearest';
 
 interface IEventTrackerOptions extends IEventTrackerBaseOptions {
+    gcIntervalMs?: number;
     maxBucketSize?: number;
     maxTimeSpan?: number;
     store?: any;
@@ -23,13 +24,17 @@ export const bucketDataIndexMap: IBucketDataIndexMap = {
 class EventTracker extends EventTrackerBase {
     #count = 0;
     #store: any;
+    #gcIntervalMs = config.GARBAGE_COLLECTION_INTERVAL_MS;
     #maxBucketSize = config.DEFAULT_MAX_BUCKET_SIZE;
     #maxTimeSpan = config.MAX_TIMESPAN_SECONDS;
+    #gcIntervalId;
     static calculateCountWithinTimespan: ({
         currentTotal,
         startRecord,
     }) => number;
     static getFirstRecord: (store, startTimeSeconds: number) => any[];
+    static getFirstTimestampOutOfRange: (maxTimeSpan: number) => number;
+    static getGCStartIndex: (store, startTimeSeconds: number, bucketKeys: string[]) => number;
     get store() {
         return this.#store;
     }
@@ -41,8 +46,18 @@ class EventTracker extends EventTrackerBase {
 
         // We could replace store with an external cache, but that's not in the scope of the requirements
         this.#store = options.store || {};
+        this.#gcIntervalMs = options.gcIntervalMs || config.GARBAGE_COLLECTION_INTERVAL_MS;
         this.#maxBucketSize = options.maxBucketSize || config.DEFAULT_MAX_BUCKET_SIZE;
         this.#maxTimeSpan = options.maxTimeSpan || config.MAX_TIMESPAN_SECONDS;
+
+        if (this.#maxBucketSize > this.#maxTimeSpan) {
+            // This prevents garbage collection from trashing a bucket with data that is withing maxTimeSpan
+            throw new Error('maxBucketSize cannot be greater than maxTimeSpan');
+        }
+
+        this.#gcIntervalId = setInterval(() => {
+            this.startGarbageCollection();
+        }, this.#gcIntervalMs);
     }
 
     add() {
@@ -81,7 +96,7 @@ class EventTracker extends EventTrackerBase {
     }
 
     // intervalSeconds: Number of seconds in the past to start count
-    getEventCount(intervalSeconds: number) {
+    getEventCount(intervalSeconds: number = this.#maxTimeSpan) {
         // eslint-disable-next-line no-param-reassign
         intervalSeconds = intervalSeconds > this.#maxTimeSpan ? this.#maxTimeSpan : intervalSeconds;
         const nowSec = Math.round(Date.now() / 1000);
@@ -96,6 +111,32 @@ class EventTracker extends EventTrackerBase {
             currentTotal: this.#count,
             startRecord,
         });
+    }
+
+    startGarbageCollection() {
+        this.#gcIntervalId = setInterval(() => {
+            this.collectGarbage();
+        });
+    }
+
+    stopGarbageCollection() {
+        clearInterval(this.#gcIntervalId);
+    }
+
+    collectGarbage() {
+        const startSeconds = EventTracker.getFirstTimestampOutOfRange(this.#maxTimeSpan);
+        const bucketKeys = Object.keys(this.#store);
+        const latestCollectibleBucketKeyIndex = EventTracker.getGCStartIndex(this.#store, startSeconds, bucketKeys);
+
+        if (latestCollectibleBucketKeyIndex !== -1) {
+            for (let i = latestCollectibleBucketKeyIndex; i >= 0; i -= 1) {
+                this.deleteBucket(bucketKeys[i]);
+            }
+        }
+    }
+
+    deleteBucket(bucketKey) {
+        delete this.#store[bucketKey];
     }
 }
 
@@ -131,5 +172,12 @@ EventTracker.getFirstRecord = (store, startTimeSeconds) => {
 
     return store[startBucketKey][startRecordIndex];
 };
+
+// 1 additional second less than the maxTimeSpan to prevent garbage collecting event data within valid range
+EventTracker.getFirstTimestampOutOfRange = (maxTimeSpan) => (Math.floor(Date.now() / 1000)) - maxTimeSpan - 1;
+
+EventTracker.getGCStartIndex = (store, startTimeSeconds, bucketKeys) => quickSearchNearest(bucketKeys, startTimeSeconds, 'prev', {
+    normalizeValue: (val) => Number(val),
+});
 
 export default EventTracker;
